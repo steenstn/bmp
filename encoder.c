@@ -6,18 +6,30 @@
 #define DECODE 2
 
 void decode(char* filename);
+void printInstructions() {
+  printf("Usage: \n");
+  printf("Encode a file: ./encoder -e filename.bmp message\n");
+  printf("Decode a file: ./encoder -d filename.bmp\n");
+}
 
 int main(int argc, char *argv[]) {
 
+  if(argc == 1) {
+    printInstructions();
+    return 0;
+  }
   FILE *file;
-  file = fopen(argv[1], "rb");
+  file = fopen(argv[2], "rb");
   char header[14];
 
   fread(header, 14, 1, file);
-  int imageStart = header[10];
+  // TODO can be 4 bytes
+  //
+  unsigned char imageStart = header[10];
+  printf("Bits offset: %d\n", imageStart);
   fclose(file);
 
-  char *alg = argv[2];
+  char *alg = argv[1];
 
   int algorithm = 0;
   if(alg[1] == 'd') {
@@ -27,7 +39,7 @@ int main(int argc, char *argv[]) {
   }
 
   if(algorithm == DECODE) {
-    decode(argv[1]);
+    decode(argv[2]);
     return 0;
   }
 
@@ -36,17 +48,9 @@ int main(int argc, char *argv[]) {
 
   printf("size of message: %lu\n", strlen(message));
 
-  file = fopen(argv[1], "r+b");
+  file = fopen(argv[2], "r+b");
 
   fseek(file, imageStart, SEEK_SET);
-
- // printf("bit shift: %d\n", 12 >> 2);
-
-  int image = 220;
-  char toEncode = 'A'; // 1000001
-  int toWrite = toEncode & 0b11000000;
-  int result = image | toWrite >> 6;
-  //printf("result %d\n", result);
 
 
   for(int i = 0; i < (int)strlen(message); i++) {
@@ -88,13 +92,14 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
+
 void decode(char* filename) {
   FILE *file;
   file = fopen(filename, "rb");
   char header[14];
 
   fread(header, 14, 1, file);
-  int imageStart = header[10];
+  unsigned char imageStart = header[10];
 
 
   fseek(file, imageStart, SEEK_SET);
