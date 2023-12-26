@@ -1,2 +1,5 @@
 *.bmp
 create_bmp
+.vscode/
+build/
+.DS_Store
