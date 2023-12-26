@@ -1,4 +1,5 @@
-/*#include <stdio.h>
+// Small program to create a simple BMP image
+#include <stdio.h>
 #include <stdlib.h>
 
 
@@ -36,4 +37,4 @@ int main (int argc, char *argv[]) {
   fclose(file);
   return 0;
 }
-*/
+
