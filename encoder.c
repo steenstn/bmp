@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     fread(block, 1, 8, file);
     fseek(file, -8, SEEK_CUR);
 
-
+    
     unsigned char target[8] =
       {
         (message[i] & 0b1),
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     for(int j = 0; j < 8; j++) {
       if(target[j] > (block[j] & 0b1)) {
         block[j]++;
-      } else if (target[j] <( block[j] & 0b1)) {
+      } else if (target[j] < (block[j] & 0b1)) {
         block[j]--;
       }
     }
@@ -88,6 +88,8 @@ int main(int argc, char *argv[]) {
   fclose(file);
   return 0;
 }
+
+
 
 
 void decode(char* filename) {
