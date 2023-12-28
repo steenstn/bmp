@@ -5,6 +5,8 @@
 #define ENCODE 1
 #define DECODE 2
 
+
+void encode(const char charToEncode, FILE* file); 
 void decode(char* filename);
 void printInstructions() {
   printf("Usage: \n");
@@ -46,34 +48,43 @@ int main(int argc, char *argv[]) {
 
   char *message = argv[3];
 
-  printf("Size of message: %lu\n", strlen(message));
 
   file = fopen(argv[2], "r+b");
 
   fseek(file, imageStart, SEEK_SET);
 
+  printf("Size of message: %lu\n", strlen(message));
+  unsigned int messageSize = strlen(message);
   printf("Message to encode: %s\n", message);
+  
 
   for(int i = 0; i < (int)strlen(message); i++) {
+    encode(message[i], file);
+  }
 
-    unsigned char block[8];
-    fread(block, 1, 8, file);
-    fseek(file, -8, SEEK_CUR);
+  fclose(file);
+  return 0;
+}
 
-    
-    unsigned char target[8] =
+void encode(const char charToEncode, FILE* file) {
+  
+  unsigned char block[8];
+  fread(block, 1, 8, file);
+  fseek(file, -8, SEEK_CUR); 
+  
+  unsigned char target[8] =
       {
-        (message[i] & 0b1),
-        (message[i] & 0b10) >> 1,
-        (message[i] & 0b100) >> 2,
-        (message[i] & 0b1000) >> 3,
-        (message[i] & 0b10000) >> 4,
-        (message[i] & 0b100000) >> 5,
-        (message[i] & 0b1000000) >> 6,
-        (message[i] & 0b10000000) >> 7
+        (charToEncode & 0b1),
+        (charToEncode & 0b10) >> 1,
+        (charToEncode & 0b100) >> 2,
+        (charToEncode & 0b1000) >> 3,
+        (charToEncode & 0b10000) >> 4,
+        (charToEncode & 0b100000) >> 5,
+        (charToEncode & 0b1000000) >> 6,
+        (charToEncode & 0b10000000) >> 7
       };
 
-    for(int j = 0; j < 8; j++) {
+ for(int j = 0; j < 8; j++) {
       if(target[j] > (block[j] & 0b1)) {
         block[j]++;
       } else if (target[j] < (block[j] & 0b1)) {
@@ -82,14 +93,8 @@ int main(int argc, char *argv[]) {
     }
 
 
-    fwrite(block, 1, 8, file);
-  }
-
-  fclose(file);
-  return 0;
+    fwrite(block, 1, 8, file); 
 }
-
-
 
 
 void decode(char* filename) {
