@@ -5,9 +5,10 @@
 #define ENCODE 1
 #define DECODE 2
 
-
+void encodeMessage(const char* message, const char* filename);
 void encode(const char charToEncode, FILE* file); 
-void decode(char* filename);
+void decodeMessage(char* filename);
+
 void printInstructions() {
   printf("Usage: \n");
   printf("Encode a file: ./encoder -e filename.bmp message\n");
@@ -20,17 +21,7 @@ int main(int argc, char *argv[]) {
     printInstructions();
     return 0;
   }
-  FILE *file;
-  file = fopen(argv[2], "rb");
-  unsigned char header[14];
-
-  fread(header, 14, 1, file);
-  // TODO can be 4 bytes
-  //
-  unsigned char imageStart = header[10];
-  printf("Bits offset: %d\n", imageStart);
-  fclose(file);
-
+  
   char *alg = argv[1];
 
   int algorithm = 0;
@@ -41,15 +32,24 @@ int main(int argc, char *argv[]) {
   }
 
   if(algorithm == DECODE) {
-    decode(argv[2]);
-    return 0;
+    decodeMessage(argv[2]);
+  } else if(algorithm == ENCODE) {
+    encodeMessage(argv[3], argv[2]);
   }
 
+  return 0;
+}
 
-  char *message = argv[3];
+void encodeMessage(const char* message, const char* filename) {
+  FILE *file;
+  file = fopen(filename, "r+b");
+  unsigned char header[14];
 
-
-  file = fopen(argv[2], "r+b");
+  fread(header, 14, 1, file);
+  // TODO can be 4 bytes
+  //
+  unsigned char imageStart = header[10];
+  printf("Bits offset: %d\n", imageStart);
 
   fseek(file, imageStart, SEEK_SET);
 
@@ -57,13 +57,14 @@ int main(int argc, char *argv[]) {
   unsigned int messageSize = strlen(message);
   printf("Message to encode: %s\n", message);
   
-
+  encode((char)messageSize, file);
+  
   for(int i = 0; i < (int)strlen(message); i++) {
     encode(message[i], file);
   }
 
   fclose(file);
-  return 0;
+
 }
 
 void encode(const char charToEncode, FILE* file) {
@@ -97,7 +98,7 @@ void encode(const char charToEncode, FILE* file) {
 }
 
 
-void decode(char* filename) {
+void decodeMessage(char* filename) {
   FILE *file;
   file = fopen(filename, "rb");
   unsigned char header[14];
@@ -107,11 +108,23 @@ void decode(char* filename) {
 
 
   fseek(file, imageStart, SEEK_SET);
+  unsigned char block[8];
+  fread(block, 1, 8, file);
+  unsigned char result =
+      (block[0] & 0b1) +
+      ((block[1] & 0b1) << 1) +
+      ((block[2] & 0b1) << 2) +
+      ((block[3] & 0b1) << 3) +
+      ((block[4] & 0b1) << 4) +
+      ((block[5] & 0b1) << 5) +
+      ((block[6] & 0b1) << 6) +
+      ((block[7] & 0b1) << 7);
 
-  for(int i = 0; i < 50; i++) {
-    unsigned char block[8];
+  unsigned messageSize = (int)result;
+  printf("Message size: %d\n", messageSize);
+  for(int i = 0; i < messageSize; i++) {
     fread(block, 1, 8, file);
-    unsigned char result =
+    result =
       (block[0] & 0b1) +
       ((block[1] & 0b1) << 1) +
       ((block[2] & 0b1) << 2) +
