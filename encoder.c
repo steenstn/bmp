@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ENCODE 1
-#define DECODE 2
 
 void encodeMessage(const char* message, const char* filename);
 void encode(const char charToEncode, FILE* file); 
@@ -24,16 +22,9 @@ int main(int argc, char *argv[]) {
   
   char *alg = argv[1];
 
-  int algorithm = 0;
   if(alg[1] == 'd') {
-    algorithm = DECODE;
-  } else if(alg[1] == 'e') {
-    algorithm = ENCODE;
-  }
-
-  if(algorithm == DECODE) {
     decodeMessage(argv[2]);
-  } else if(algorithm == ENCODE) {
+  } else if(alg[1] == 'e') {
     encodeMessage(argv[3], argv[2]);
   }
 
